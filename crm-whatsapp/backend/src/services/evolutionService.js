@@ -6,9 +6,16 @@ const axios = require('axios');
  */
 class EvolutionService {
   constructor() {
+    // IMPORTANTE: Em produção, sempre use HTTPS para segurança
+    // Configure a variável EVOLUTION_API_URL com a URL completa da sua API
     this.baseUrl = process.env.EVOLUTION_API_URL || 'http://localhost:8080';
     this.apiKey = process.env.EVOLUTION_API_KEY || '';
     this.instanceName = process.env.EVOLUTION_INSTANCE_NAME || 'crm-whatsapp';
+    
+    // Aviso de segurança para desenvolvimento
+    if (this.baseUrl.startsWith('http://') && process.env.NODE_ENV === 'production') {
+      console.warn('⚠️ AVISO DE SEGURANÇA: Use HTTPS em produção para a Evolution API');
+    }
   }
 
   // Configurar headers da requisição

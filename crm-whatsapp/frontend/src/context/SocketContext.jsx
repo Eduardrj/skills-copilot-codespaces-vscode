@@ -8,7 +8,9 @@ export function SocketProvider({ children }) {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const socketInstance = io('http://localhost:3001', {
+    // URL configurável via variável de ambiente para suportar produção com HTTPS
+    const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const socketInstance = io(socketUrl, {
       transports: ['websocket', 'polling']
     });
 

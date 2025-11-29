@@ -47,7 +47,9 @@ async function handleNewMessage(data, io) {
   try {
     const messageData = data.message;
     
-    // Ignorar mensagens enviadas por nós
+    // Ignorar mensagens enviadas por nós (isFromMe = true)
+    // Isso evita loops infinitos onde o sistema processa suas próprias mensagens
+    // e também duplicação de mensagens no histórico
     if (messageData.key.fromMe) {
       return;
     }
