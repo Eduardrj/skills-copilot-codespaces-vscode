@@ -1,0 +1,113 @@
+// Prisma Schema para CRM WhatsApp
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de Contato
+model Contact {
+  id          String    @id @default(uuid())
+  name        String
+  phone       String    @unique
+  email       String?
+  avatar      String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relacionamentos
+  tags        ContactTag[]
+  messages    Message[]
+  conversations Conversation[]
+  funnelStage FunnelStage? @relation(fields: [funnelStageId], references: [id])
+  funnelStageId String?
+}
+
+// Modelo de Tag/Etiqueta
+model Tag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  color     String   @default("#3B82F6")
+  createdAt DateTime @default(now())
+  
+  // Relacionamentos
+  contacts  ContactTag[]
+}
+
+// Tabela intermediária para relação muitos-para-muitos
+model ContactTag {
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId String
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     String
+  
+  @@id([contactId, tagId])
+}
+
+// Modelo de Conversa
+model Conversation {
+  id          String    @id @default(uuid())
+  contact     Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId   String
+  status      String    @default("open") // open, pending, closed
+  lastMessage String?
+  lastMessageAt DateTime?
+  unreadCount Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relacionamentos
+  messages    Message[]
+}
+
+// Modelo de Mensagem
+model Message {
+  id             String   @id @default(uuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  contact        Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId      String
+  content        String
+  type           String   @default("text") // text, image, audio, video, document
+  mediaUrl       String?
+  isFromMe       Boolean  @default(false)
+  status         String   @default("sent") // sent, delivered, read
+  timestamp      DateTime @default(now())
+  
+  // ID da mensagem na Evolution API
+  externalId     String?
+}
+
+// Modelo de Etapa do Funil
+model FunnelStage {
+  id        String    @id @default(uuid())
+  name      String
+  color     String    @default("#3B82F6")
+  order     Int
+  createdAt DateTime  @default(now())
+  
+  // Relacionamentos
+  contacts  Contact[]
+}
+
+// Modelo de Resposta Rápida
+model QuickReply {
+  id        String   @id @default(uuid())
+  shortcut  String   @unique
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Modelo de Configurações
+model Settings {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
